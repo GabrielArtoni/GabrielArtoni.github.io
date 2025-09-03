@@ -65,7 +65,6 @@
 
     .chat-embed {
       width: 100%;
-      max-width: 700px;
       height: 600px;
       margin-top: 2rem;
       border-radius: 15px;
@@ -164,13 +163,13 @@
           embed: true
         });
       } else {
-        setTimeout(carregarBot, 100);
+        setTimeout(carregarBot, 200);
       }
     }
 
     (function (d, s, id) {
       var js, fjs = d.getElementsByTagName(s)[0];
-      if (d.getElementById(id)) { return; }
+      if (d.getElementById(id)) return;
       js = d.createElement(s); js.id = id;
       js.src = "https://cdn.tecnologia.senior.com.br/platform/botfactory/conversation/production/bundle.js";
       js.onload = carregarBot;
