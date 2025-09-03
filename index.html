@@ -63,6 +63,17 @@
       color: #555;
     }
 
+    .chat-embed {
+      width: 100%;
+      max-width: 700px;
+      height: 600px;
+      margin-top: 2rem;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      background-color: white;
+    }
+
     .cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -117,6 +128,9 @@
     <section class="hero">
       <h1>Olá, tudo bem?</h1>
       <p>Converse com nosso assistente virtual para tirar dúvidas, acompanhar processos e receber suporte em tempo real.</p>
+
+      <!-- Bot embutido -->
+      <div id="meuChatBot" class="chat-embed"></div>
     </section>
 
     <section class="cards">
@@ -139,22 +153,29 @@
     Desenvolvido por Gabriel Artoni • BPM Senior • © 2025
   </footer>
 
-  <!-- BOT DA SENIOR -->
+  <!-- BOT DA SENIOR EMBUTIDO -->
   <script>
-    (function (d, s, id) {
-        var js, fjs = d.getElementsByTagName(s)[0];
-        if (d.getElementById(id)) { return; }
-        js = d.createElement(s); js.id = id;
-        js.src = "https://cdn.tecnologia.senior.com.br/platform/botfactory/conversation/production/bundle.js";
-        fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'botfactory-sdk'));
-
-    window.onload = function () {
+    function carregarBot() {
+      if (window.BotFactory) {
         window.BotFactory.init({
-            appKey: "hBG/nwFiIy+gflZC8Mph9ZTk6uH0nvoxokR277x39aNg9YNrEQknRqiUuCrjHxz1gOaSdmdpTqrMALHWf/Qecg==",
-            restUrl: "https://platform.senior.com.br/t/senior.com.br/bridge/1.0/rest/"
+          appKey: "hBG/nwFiIy+gflZC8Mph9ZTk6uH0nvoxokR277x39aNg9YNrEQknRqiUuCrjHxz1gOaSdmdpTqrMALHWf/Qecg==",
+          restUrl: "https://platform.senior.com.br/t/senior.com.br/bridge/1.0/rest/",
+          containerId: "meuChatBot",
+          embed: true
         });
-    };
+      } else {
+        setTimeout(carregarBot, 100);
+      }
+    }
+
+    (function (d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) { return; }
+      js = d.createElement(s); js.id = id;
+      js.src = "https://cdn.tecnologia.senior.com.br/platform/botfactory/conversation/production/bundle.js";
+      js.onload = carregarBot;
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'botfactory-sdk'));
   </script>
 </body>
 </html>
