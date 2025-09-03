@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Nossa Página de Contato</title>
+</head>
+<body>
+
+    <h1>Bem-vindo ao nosso site!</h1>
+    <p>Fale conosco ou tire suas dúvidas com nosso assistente virtual no canto da tela.</p>
+
+    <script>
+        (function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) { return; }
+            js = d.createElement(s); js.id = id;
+            js.src = "https://cdn.tecnologia.senior.com.br/platform/botfactory/conversation/production/bundle.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'botfactory-sdk'));
+        (function () {
+            window.onload = function () {
+                window.BotFactory.init({
+					appKey: "hBG/nwFiIy+gflZC8Mph9ZTk6uH0nvoxokR277x39aNg9YNrEQknRqiUuCrjHxz1gOaSdmdpTqrMALHWf/Qecg==",
+					restUrl: "https://platform.senior.com.br/t/senior.com.br/bridge/1.0/rest/"
+				});
+            }
+        })();
+    </script>
+
+</body>
+</html>
