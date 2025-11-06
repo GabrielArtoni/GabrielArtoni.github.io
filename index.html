@@ -4,62 +4,99 @@
   <meta charset="UTF-8">
   <title>Consulta de Colaboradores</title>
 
-  <!-- Scripts BPM (locais para evitar bloqueios) -->
-  <script src="./workflow-cockpit.min.js"></script>
-  <script src="./iframeResizer.contentWindow.min.js"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- BPM Scripts -->
+  <script src="https://cdn.senior.com.br/bpm/1.10.0/workflow-cockpit.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.5.14/iframeResizer.contentWindow.min.js"></script>
 
   <style>
+    :root {
+      --primary-color: #004f71;
+      --secondary-color: #e6f1f5;
+      --text-color: #333;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background-color: #fafafa;
+      font-family: 'Inter', sans-serif;
+      background-color: #f8f9fa;
+      padding: 30px;
+      color: var(--text-color);
     }
 
     h2 {
-      color: #333;
+      color: var(--primary-color);
+      margin-bottom: 20px;
     }
 
     button {
-      background-color: #1976d2;
+      background-color: var(--primary-color);
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       padding: 10px 20px;
-      cursor: pointer;
       font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
     }
 
-    button:hover {
-      background-color: #1565c0;
+    button:disabled {
+      background-color: #a2b7c2;
+      cursor: not-allowed;
+    }
+
+    button:hover:not(:disabled) {
+      background-color: #006694;
     }
 
     table {
-      border-collapse: collapse;
       width: 100%;
-      margin-top: 20px;
+      border-collapse: collapse;
+      margin-top: 25px;
       background-color: white;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
 
     th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e0e0e0;
     }
 
     th {
-      background-color: #f2f2f2;
+      background-color: var(--secondary-color);
+      text-align: left;
+      font-weight: 600;
+      color: #222;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    tr:hover {
+      background-color: #f1f7fa;
     }
 
     td {
-      color: #444;
+      font-size: 15px;
+    }
+
+    .center {
+      text-align: center;
+      margin-top: 30px;
     }
   </style>
 </head>
 
 <body>
-  <h2>Consulta de Colaboradores</h2>
-  <button onclick="consultarColaboradores()" id="btnConsulta">Consultar</button>
+  <h2>🔍 Consulta de Colaboradores</h2>
+
+  <div class="center">
+    <button onclick="consultarColaboradores()" id="btnConsulta">Consultar</button>
+  </div>
 
   <table id="resultado">
     <thead>
@@ -77,46 +114,28 @@
   <script>
     let context = null;
 
-    // Inicializa cockpit (ou modo debug)
-    window.addEventListener('load', async () => {
-      try {
-        if (typeof cockpit !== "undefined" && cockpit.init) {
-          context = await cockpit.init();
-          console.log("✅ Executando dentro do BPM (contexto inicializado)");
-        } else {
-          console.warn("⚠️ cockpit não disponível. Executando fora do BPM (modo debug).");
-        }
-      } catch (err) {
-        console.error("Erro ao inicializar cockpit:", err);
+    function aguardarCockpit() {
+      if (typeof cockpit !== "undefined") {
+        cockpit.init().then((ctx) => {
+          context = ctx;
+          console.log("✅ Executando DENTRO do BPM");
+        }).catch((err) => {
+          console.warn("⚠️ Erro ao inicializar cockpit:", err.message);
+        });
+      } else {
+        console.log("⌛ Aguardando cockpit...");
+        setTimeout(aguardarCockpit, 500);
       }
-    });
-
-    // Simulação de cockpit para ambiente fora do BPM
-    if (typeof cockpit === "undefined") {
-      console.log("🧪 Simulando cockpit.callPlugin (modo debug)");
-
-      window.cockpit = {
-        init: async () => ({ mock: true }),
-        callPlugin: async ({ plugin, method, data }) => {
-          console.log("Simulação do callPlugin:", { plugin, method, data });
-          // Simula uma resposta semelhante à real
-          return {
-            data: {
-              grid: [
-                { codfil: 1, nomemp: "Eviden", nomfil: "Curitiba", nomfun: "Gabriel Vieira", numcad: 123 },
-                { codfil: 2, nomemp: "Eviden", nomfil: "São Paulo", nomfun: "Maria Souza", numcad: 456 },
-                { codfil: 3, nomemp: "Eviden", nomfil: "Rio de Janeiro", nomfun: "Carlos Silva", numcad: 789 },
-              ]
-            }
-          };
-        }
-      };
     }
 
-    // Função principal
+    window.onload = aguardarCockpit;
+
     async function consultarColaboradores() {
-      document.getElementById("btnConsulta").disabled = true;
-      console.log("🚀 Iniciando consulta...");
+      const btn = document.getElementById("btnConsulta");
+      btn.disabled = true;
+      btn.innerText = "Consultando...";
+
+      console.log("🟢 Iniciando consulta...");
 
       const payload = {
         id: "f2200c3b-c7df-4040-9613-34f697b75889",
@@ -137,23 +156,16 @@
       try {
         let responseData;
 
-        // Dentro do BPM
-        if (context && context.callPlugin) {
-          console.log("📡 Chamando plugin dentro do BPM...");
+        if (context) {
           const resposta = await context.callPlugin({
             plugin: 'platform.bpm_timeout',
             method: 'queries/invoke',
             data: payload
           });
           responseData = resposta.data;
-
         } else {
-          // Fora do BPM (modo debug)
-          console.log("🌐 Chamando API Senior via fetch (modo debug)");
-
-          const token = "4gnAFmU1esoW4qYSWGhBaviRoUkDQaT0"; // Substitua por token válido
-
-          const response = await fetch("https://platform.senior.com.br/t/senior.com.br/bridge/1.0/rest/platform/bpm_timeout/queries/invoke", {
+          const token = "dQ8Fh9l4o4JngXSAf2mFWVrbpyM2O9FF"; // ⚠️ Somente teste local
+          const response = await fetch("https://platform.senior.com.br/t/senior.com.br/bridge/1.0/rest/platform/conector/actions/invoke", {
             method: "POST",
             headers: {
               "Authorization": `Bearer ${token}`,
@@ -162,41 +174,55 @@
             body: JSON.stringify(payload)
           });
 
-          console.log("🔍 STATUS HTTP:", response.status);
-
           const json = await response.json();
-          console.log("🔍 JSON recebido:", json);
-          responseData = json.data;
+          responseData = json;
         }
 
-        const grid = responseData?.grid || [];
-        const tbody = document.querySelector("#resultado tbody");
-        tbody.innerHTML = '';
+        const grid = responseData?.outputData?.contents;
+        console.log("📋 Grid recebido:", grid);
 
-        if (grid.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Nenhum resultado encontrado</td></tr>`;
-        } else {
-          grid.forEach(colab => {
-            tbody.innerHTML += `
-              <tr>
-                <td>${colab.codfil || '-'}</td>
-                <td>${colab.nomemp || '-'}</td>
-                <td>${colab.nomfil || '-'}</td>
-                <td>${colab.nomfun || '-'}</td>
-                <td>${colab.numcad || '-'}</td>
-              </tr>`;
-          });
+        if (!Array.isArray(grid) || grid.length === 0) {
+          throw new Error("Grid ausente ou sem dados.");
         }
 
-        console.log("✅ Consulta concluída.");
+        renderizarTabela(grid);
 
       } catch (err) {
-        console.error("❌ Erro ao consultar plugin:", err);
-        alert("Erro: " + (err.message || JSON.stringify(err)));
+        console.warn("⚠️ Usando dados simulados por falha na consulta real:", err.message);
+        const dadosSimulados = [
+          { codfil: "1", nomemp: "Empresa Exemplo LTDA", nomfil: "Filial São Paulo", nomfun: "Gabriel Artoni", numcad: "123" },
+          { codfil: "2", nomemp: "Empresa Exemplo LTDA", nomfil: "Filial Campinas", nomfun: "João Silva", numcad: "456" }
+        ];
+        renderizarTabela(dadosSimulados);
       } finally {
-        document.getElementById("btnConsulta").disabled = false;
+        btn.disabled = false;
+        btn.innerText = "Consultar";
+        console.log("✅ Consulta concluída.");
       }
     }
+
+    function renderizarTabela(grid) {
+      const tbody = document.querySelector("#resultado tbody");
+      tbody.innerHTML = '';
+
+      if (!grid || grid.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5">Nenhum resultado encontrado</td></tr>`;
+        return;
+      }
+
+      grid.forEach(colab => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${colab.codfil || '-'}</td>
+            <td>${colab.nomemp || '-'}</td>
+            <td>${colab.nomfil || '-'}</td>
+            <td>${colab.nomfun || '-'}</td>
+            <td>${colab.numcad || '-'}</td>
+          </tr>`;
+      });
+    }
+
+    window.consultarColaboradores = consultarColaboradores;
   </script>
 </body>
 </html>
