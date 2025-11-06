@@ -1,160 +1,72 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Atendimento Virtual | BPM Senior</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-
-    header {
-      background: linear-gradient(to right, #002d62, #00509e);
-      color: white;
-      padding: 1.5rem 2rem;
-      text-align: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
-
-    header h1 {
-      font-size: 2rem;
-      font-weight: 600;
-    }
-
-    main {
-      flex: 1;
-      padding: 3rem 2rem;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2rem;
-    }
-
-    .hero {
-      max-width: 700px;
-      background: white;
-      padding: 2rem;
-      border-radius: 15px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      animation: fadeIn 1s ease-in;
-    }
-
-    .hero h1 {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-      color: #002d62;
-    }
-
-    .hero p {
-      font-size: 1.2rem;
-      color: #555;
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.5rem;
-      width: 100%;
-      max-width: 900px;
-    }
-
-    .card {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-    }
-
-    .card h3 {
-      margin-bottom: 0.5rem;
-      color: #00509e;
-    }
-
-    .card p {
-      font-size: 0.95rem;
-      color: #444;
-    }
-
-    footer {
-      background-color: #002d62;
-      color: white;
-      text-align: center;
-      padding: 1rem;
-      font-size: 0.9rem;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>Consulta de Colaboradores</title>
+  <script src="https://public.plataformasenior.com.br/bpm/webforms/workflow-cockpit.js"></script>
+  <script src="https://public.plataformasenior.com.br/bpm/webforms/iframeResizer.contentWindow.min.js"></script>
 </head>
 <body>
-  <header>
-    <h1>🤖 Atendimento Virtual - BPM Senior</h1>
-  </header>
+  <h2>Consulta de Colaboradores</h2>
+  <button onclick="consultarColaboradores()">Consultar</button>
+  <br><br>
+  <table id="resultado" border="1">
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Nome</th>
+        <th>Empresa</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-  <main>
-    <section class="hero">
-      <h1>Olá, tudo bem?</h1>
-      <p>Converse com nosso assistente virtual para tirar dúvidas, acompanhar processos e receber suporte em tempo real.</p>
-    </section>
-
-    <section class="cards">
-      <div class="card">
-        <h3>💬 Suporte Rápido</h3>
-        <p>Respostas instantâneas para suas principais dúvidas sobre BPM Senior.</p>
-      </div>
-      <div class="card">
-        <h3>📊 Consultas</h3>
-        <p>Acompanhe solicitações, processos e aprovações diretamente pelo bot.</p>
-      </div>
-      <div class="card">
-        <h3>⚡ Agilidade</h3>
-        <p>Economize tempo com automações que agilizam o atendimento.</p>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    Desenvolvido por Gabriel Artoni • BPM Senior • © 2025
-  </footer>
-
-  <!-- BOT DA SENIOR -->
   <script>
-    (function (d, s, id) {
-        var js, fjs = d.getElementsByTagName(s)[0];
-        if (d.getElementById(id)) { return; }
-        js = d.createElement(s); js.id = id;
-        js.src = "https://cdn.tecnologia.senior.com.br/platform/botfactory/conversation/production/bundle.js";
-        fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'botfactory-sdk'));
+    let context;
 
-    window.onload = function () {
-        window.BotFactory.init({
-            appKey: "hBG/nwFiIy+gflZC8Mph9ZTk6uH0nvoxokR277x39aNg9YNrEQknRqiUuCrjHxz1gOaSdmdpTqrMALHWf/Qecg==",
-            restUrl: "https://platform.senior.com.br/t/senior.com.br/bridge/1.0/rest/"
-        });
+    window.onload = async () => {
+      context = await cockpit.init();
     };
+
+    async function consultarColaboradores() {
+      try {
+        const response = await context.callPlugin({
+          plugin: 'platform.bpm_timeout',
+          method: 'queries/invoke',
+          data: {
+            id: 'f2200c3b-c7df-4040-9613-34f697b75889',
+            configurationId: 'f598276b-4931-4abd-9d67-3e32ec70159c',
+            inputData: {
+              server: 'http://hc240105fbz3117.cloudhialinx.com.br:12507',
+              module: 'rubi',
+              port: 'consult_colab_teste',
+              service: 'integrador_bpm_testevarios',
+              user: 'senior',
+              password: 'senior',
+              encryption: '0',
+              rootObject: 'grid'
+            },
+            ticketRequest: '0c767ce3-5055-4799-99ae-8a70d34a565d'
+          }
+        });
+
+        const grid = response.data.grid || [];
+        const tbody = document.querySelector('#resultado tbody');
+        tbody.innerHTML = '';
+
+        grid.forEach(colab => {
+          tbody.innerHTML += `
+            <tr>
+              <td>${colab.codigo || '-'}</td>
+              <td>${colab.nome || '-'}</td>
+              <td>${colab.empresa || '-'}</td>
+            </tr>`;
+        });
+
+      } catch (err) {
+        alert('Erro na chamada do plugin: ' + (err.message || JSON.stringify(err)));
+      }
+    }
   </script>
 </body>
 </html>
