@@ -4,16 +4,24 @@
   <meta charset="UTF-8">
   <title>Consulta de Colaboradores</title>
 
-  <!-- 👇 CORRIGIDO: usa versão oficial estável -->
+  <!-- Scripts do BPM (carregam apenas no BPM real) -->
   <script src="https://cdn.senior.com.br/bpm/1.10.0/workflow-cockpit.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.5.14/iframeResizer.contentWindow.min.js"></script>
-</head>
 
+  <style>
+    table, th, td {
+      border: 1px solid black;
+      border-collapse: collapse;
+      padding: 5px;
+    }
+  </style>
+</head>
 <body>
   <h2>Consulta de Colaboradores</h2>
-  <button onclick="consultarColaboradores()">Consultar</button>
+  <button onclick="consultarColaboradores()" id="btnConsulta">Consultar</button>
   <br><br>
-  <table id="resultado" border="1">
+
+  <table id="resultado">
     <thead>
       <tr>
         <th>Código</th>
@@ -25,46 +33,68 @@
   </table>
 
   <script>
-    let context;
+    let context = null;
 
     window.onload = async () => {
-      try {
-        context = await cockpit.init();
-        console.log('Cockpit inicializado com sucesso!');
-      } catch (err) {
-        alert('Erro ao inicializar cockpit. Verifique se o formulário está sendo aberto dentro do BPM.');
+      if (typeof cockpit !== "undefined") {
+        try {
+          context = await cockpit.init();
+          console.log("Executando DENTRO do BPM");
+        } catch (e) {
+          console.warn("Falha ao inicializar cockpit. Executando fora do BPM.");
+        }
+      } else {
+        console.log("Executando FORA do BPM");
       }
     };
 
     async function consultarColaboradores() {
-      if (!context) {
-        alert('Cockpit ainda não carregado — abra via BPM.');
-        return;
-      }
+      document.getElementById("btnConsulta").disabled = true;
+
+      const payload = {
+        id: "f2200c3b-c7df-4040-9613-34f697b75889",
+        configurationId: "f598276b-4931-4abd-9d67-3e32ec70159c",
+        inputData: {
+          server: "http://hc240105fbz3117.cloudhialinx.com.br:12507",
+          module: "rubi",
+          port: "consult_colab_teste",
+          service: "integrador_bpm_testevarios",
+          user: "senior",
+          password: "senior",
+          encryption: "0",
+          rootObject: "grid"
+        },
+        ticketRequest: "0c767ce3-5055-4799-99ae-8a70d34a565d"
+      };
 
       try {
-        const resposta = await context.callPlugin({
-          plugin: 'platform.bpm_timeout',
-          method: 'queries/invoke',
-          data: {
-            id: 'f2200c3b-c7df-4040-9613-34f697b75889',
-            configurationId: 'f598276b-4931-4abd-9d67-3e32ec70159c',
-            inputData: {
-              server: 'http://hc240105fbz3117.cloudhialinx.com.br:12507',
-              module: 'rubi',
-              port: 'consult_colab_teste',
-              service: 'integrador_bpm_testevarios',
-              user: 'senior',
-              password: 'senior',
-              encryption: '0',
-              rootObject: 'grid'
-            },
-            ticketRequest: '0c767ce3-5055-4799-99ae-8a70d34a565d'
-          }
-        });
+        let responseData;
 
-        const grid = resposta.data?.grid || [];
-        const tbody = document.querySelector('#resultado tbody');
+        if (context) {
+          // Rodando no BPM
+          const resposta = await context.callPlugin({
+            plugin: 'platform.bpm_timeout',
+            method: 'queries/invoke',
+            data: payload
+          });
+          responseData = resposta.data;
+        } else {
+          // Rodando fora do BPM (debug/local)
+          const token = "lEUkUhWjfwbjA0RDk1QZZIAjOk4VkJK2"; // 🔒 Troque por token real de teste
+          const response = await fetch("https://platform.senior.com.br/t/senior.com.br/bridge/1.0/rest/platform/bpm_timeout/queries/invoke", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+          });
+          const json = await response.json();
+          responseData = json.data;
+        }
+
+        const grid = responseData?.grid || [];
+        const tbody = document.querySelector("#resultado tbody");
         tbody.innerHTML = '';
 
         grid.forEach(colab => {
@@ -76,8 +106,11 @@
             </tr>`;
         });
 
-      } catch (erro) {
-        alert('Erro ao consultar plugin: ' + (erro.message || JSON.stringify(erro)));
+      } catch (err) {
+        console.error(err);
+        alert("Erro na consulta: " + (err.message || JSON.stringify(err)));
+      } finally {
+        document.getElementById("btnConsulta").disabled = false;
       }
     }
   </script>
