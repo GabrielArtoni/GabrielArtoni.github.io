@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>Consulta de Colaboradores</title>
-  <script src="https://public.plataformasenior.com.br/bpm/webforms/workflow-cockpit.js"></script>
-  <script src="https://public.plataformasenior.com.br/bpm/webforms/iframeResizer.contentWindow.min.js"></script>
+
+  <!-- 👇 CORRIGIDO: usa versão oficial estável -->
+  <script src="https://cdn.senior.com.br/bpm/1.10.0/workflow-cockpit.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.5.14/iframeResizer.contentWindow.min.js"></script>
 </head>
+
 <body>
   <h2>Consulta de Colaboradores</h2>
   <button onclick="consultarColaboradores()">Consultar</button>
@@ -25,10 +28,20 @@
     let context;
 
     window.onload = async () => {
-      context = await cockpit.init(); // Inicializa o BPM context
+      try {
+        context = await cockpit.init();
+        console.log('Cockpit inicializado com sucesso!');
+      } catch (err) {
+        alert('Erro ao inicializar cockpit. Verifique se o formulário está sendo aberto dentro do BPM.');
+      }
     };
 
     async function consultarColaboradores() {
+      if (!context) {
+        alert('Cockpit ainda não carregado — abra via BPM.');
+        return;
+      }
+
       try {
         const resposta = await context.callPlugin({
           plugin: 'platform.bpm_timeout',
@@ -50,8 +63,7 @@
           }
         });
 
-        const grid = resposta.data.grid || [];
-
+        const grid = resposta.data?.grid || [];
         const tbody = document.querySelector('#resultado tbody');
         tbody.innerHTML = '';
 
