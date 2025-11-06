@@ -25,12 +25,12 @@
     let context;
 
     window.onload = async () => {
-      context = await cockpit.init();
+      context = await cockpit.init(); // Inicializa o BPM context
     };
 
     async function consultarColaboradores() {
       try {
-        const response = await context.callPlugin({
+        const resposta = await context.callPlugin({
           plugin: 'platform.bpm_timeout',
           method: 'queries/invoke',
           data: {
@@ -50,7 +50,8 @@
           }
         });
 
-        const grid = response.data.grid || [];
+        const grid = resposta.data.grid || [];
+
         const tbody = document.querySelector('#resultado tbody');
         tbody.innerHTML = '';
 
@@ -63,8 +64,8 @@
             </tr>`;
         });
 
-      } catch (err) {
-        alert('Erro na chamada do plugin: ' + (err.message || JSON.stringify(err)));
+      } catch (erro) {
+        alert('Erro ao consultar plugin: ' + (erro.message || JSON.stringify(erro)));
       }
     }
   </script>
